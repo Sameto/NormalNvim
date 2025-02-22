@@ -633,4 +633,19 @@ return {
     end,
   },
 
+  --  oatmeal.nvim [ChatGPT-like interface]
+  --  https://github.com/dustinblackman/oatmeal.nvim
+  {
+    "dustinblackman/oatmeal.nvim",
+    cmd = { "Oatmeal" },
+    -- Uncomment and configure these if you want to use API keys other than OpenAI
+     opts = {
+    backend = "ollama",
+    model = "llama3.2:latest"
+     },
+    build = function()
+      vim.cmd("OatmealBuild")
+    end,
+  },
+
 }
