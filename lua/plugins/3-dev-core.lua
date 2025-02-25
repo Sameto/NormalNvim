@@ -648,4 +648,24 @@ return {
     end,
   },
 
+  -- codecompanion.nvim [AI coding assistant]
+  -- https://github.com/olimorris/codecompanion.nvim
+  {
+    "olimorris/codecompanion.nvim",
+    cmd = { "CodeCompanion" },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    opts = {
+      adapters = {
+        chat = {
+          -- Configure your preferred chat adapter here
+          "ollama", -- Uncomment to use Ollama
+          -- "openai", -- Uncomment to use OpenAI
+        }
+      }
+    }
+  },
+
 }
