@@ -642,6 +642,7 @@ return {
      opts = {
     backend = "ollama",
     model = "llama3.2:latest"
+    editor = "neovim"
      },
     build = function()
       vim.cmd("OatmealBuild")
