@@ -4,7 +4,6 @@
 --    Sections:
 --       ## TREE SITTER
 --       -> nvim-treesitter                [syntax highlight]
---       -> ts-comments.nvim               [treesitter comments]
 --       -> render-markdown.nvim           [normal mode markdown]
 --       -> nvim-highlight-colors          [hex colors]
 
@@ -31,7 +30,7 @@ local utils_lsp = require("base.utils.lsp")
 
 return {
   --  TREE SITTER ---------------------------------------------------------
-  --  [syntax highlight] + [treesitter understand html tags] + [comments]
+  --  [syntax highlight]
   --  https://github.com/nvim-treesitter/nvim-treesitter
   --  https://github.com/windwp/nvim-treesitter-textobjects
   {
@@ -132,16 +131,6 @@ return {
     end,
   },
 
-  -- ts-comments.nvim [treesitter comments]
-  -- https://github.com/folke/ts-comments.nvim
-  -- This plugin can be safely removed after nvim 0.11 is released.
-  {
-   "folke/ts-comments.nvim",
-    event = "User BaseFile",
-    enabled = vim.fn.has("nvim-0.10.0") == 1,
-    opts = {},
-  },
-
   --  render-markdown.nvim [normal mode markdown]
   --  https://github.com/MeanderingProgrammer/render-markdown.nvim
   --  While on normal mode, markdown files will display highlights.
@@ -183,14 +172,16 @@ return {
   -- nvim-java [java support]
   -- https://github.com/nvim-java/nvim-java
   -- Reliable jdtls support. Must go before mason-lspconfig and lsp-config.
+  -- NOTE: Let's use our fork until they merge pull request
+  --       https://github.com/nvim-java/nvim-java/pull/376
   {
-    "nvim-java/nvim-java",
+    "zeioth/nvim-java",
     ft = { "java" },
     dependencies = {
       "MunifTanjim/nui.nvim",
       "neovim/nvim-lspconfig",
       "mfussenegger/nvim-dap",
-      "williamboman/mason.nvim",
+      "mason-org/mason.nvim",
     },
     opts = {
       notifications = {
@@ -218,15 +209,15 @@ return {
   {
     "neovim/nvim-lspconfig",
     event = "User BaseFile",
-    dependencies = "nvim-java/nvim-java",
+    dependencies = "zeioth/nvim-java",
   },
 
   -- mason-lspconfig [auto start lsp]
-  -- https://github.com/williamboman/mason-lspconfig.nvim
+  -- https://github.com/mason-org/mason-lspconfig.nvim
   -- This plugin auto starts the lsp servers installed by Mason
   -- every time Neovim trigger the event FileType.
   {
-    "williamboman/mason-lspconfig.nvim",
+    "mason-org/mason-lspconfig.nvim",
     dependencies = { "neovim/nvim-lspconfig" },
     event = "User BaseFile",
     opts = function(_, opts)
@@ -241,10 +232,10 @@ return {
   },
 
   --  mason [lsp package manager]
-  --  https://github.com/williamboman/mason.nvim
+  --  https://github.com/mason-org/mason.nvim
   --  https://github.com/zeioth/mason-extra-cmds
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
     dependencies = { "zeioth/mason-extra-cmds", opts = {} },
     cmd = {
       "Mason",
@@ -285,7 +276,7 @@ return {
     "zeioth/none-ls-autoload.nvim",
     event = "User BaseFile",
     dependencies = {
-      "williamboman/mason.nvim",
+      "mason-org/mason.nvim",
       "zeioth/none-ls-external-sources.nvim"
     },
     opts = {
@@ -372,7 +363,6 @@ return {
         { path = "stickybuf.nvim", mods = { "stickybuf" } },
         { path = "mini.bufremove", mods = { "mini.bufremove" } },
         { path = "smart-splits.nvim", mods = { "smart-splits" } },
-        { path = "better-scape.nvim", mods = { "better_escape" } },
         { path = "toggleterm.nvim", mods = { "toggleterm" } },
         { path = "neovim-session-manager.nvim", mods = { "session_manager" } },
         { path = "nvim-spectre", mods = { "spectre" } },
@@ -412,7 +402,6 @@ return {
         { path = "nvim-treesitter", mods = { "nvim-treesitter" } },
         { path = "nvim-ts-autotag", mods = { "nvim-ts-autotag" } },
         { path = "nvim-treesitter-textobjects", mods = { "nvim-treesitter", "nvim-treesitter-textobjects" } },
-        { path = "ts-comments.nvim", mods = { "ts-comments" } },
         { path = "markdown.nvim", mods = { "render-markdown" } },
         { path = "nvim-highlight-colors", mods = { "nvim-highlight-colors" } },
         { path = "nvim-java", mods = { "java" } },
@@ -452,6 +441,7 @@ return {
         { path = "nvim-dap-ui", mods = { "dapui" } },
         { path = "cmp-dap", mods = { "cmp_dap" } },
         { path = "mason-nvim-dap.nvim", mods = { "mason-nvim-dap" } },
+
         { path = "one-small-step-for-vimkind", mods = { "osv" } },
         { path = "neotest-dart", mods = { "neotest-dart" } },
         { path = "neotest-dotnet", mods = { "neotest-dotnet" } },
@@ -670,3 +660,4 @@ return {
   },
 
 }
+

@@ -1269,7 +1269,7 @@ if is_available("markdown-preview.nvim") or is_available("markmap.nvim") or is_a
   -- Markdown preview
   if is_available("markdown-preview.nvim") then
     maps.n["<leader>Dp"] = {
-      function() vim.cmd("MarkdownPreview") end,
+      function() vim.cmd("silent! MarkdownPreview") end,
       desc = "Markdown preview",
     }
   end
@@ -1346,16 +1346,16 @@ function M.lsp_mappings(client, bufnr)
   local lsp_mappings = require("base.utils").get_mappings_template()
 
   -- Diagnostics
-  lsp_mappings.n["<leader>ld"] = { function() vim.diagnostic.open_float() end, desc = "Hover diagnostics" }
-  lsp_mappings.n["[d"] = { function()
-      -- TODO: Delete after dropping nvim 0.10 support.
-      if vim.fn.has('nvim-0.11') == 1 then vim.diagnostic.jump({ count = -1 })
-      else vim.diagnostic.goto_prev() end end, desc = "Previous diagnostic"
+  lsp_mappings.n["<leader>ld"] =
+  { function() vim.diagnostic.open_float() end, desc = "Hover diagnostics" }
+  lsp_mappings.n["[d"] = {
+    function() vim.diagnostic.jump({ count = -1 }) end,
+    desc = "Previous diagnostic",
   }
-  lsp_mappings.n["]d"] = { function()
-    -- TODO: Delete after dropping nvim 0.10 support.
-    if vim.fn.has('nvim-0.11') == 1 then vim.diagnostic.jump({ count = 1 })
-    else vim.diagnostic.goto_next() end end, desc = "Next diagnostic" }
+  lsp_mappings.n["]d"] = {
+    function() vim.diagnostic.jump({ count = 1 }) end,
+    desc = "Next diagnostic",
+  }
 
   -- Diagnostics
   lsp_mappings.n["gl"] = { function() vim.diagnostic.open_float() end, desc = "Hover diagnostics" }
