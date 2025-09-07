@@ -321,8 +321,8 @@ return {
   --  neural [chatgpt code generator]
   --  https://github.com/dense-analysis/neural
   --
-  --  NOTE: In order for this plugin to work, you will have to set
-  --        the next env var in your OS:
+  --  NOTE: This plugin is disabled by default.
+  --        To enable it set the next env var in your OS:
   --        OPENAI_API_KEY="my_key_here"
   {
     "dense-analysis/neural",
@@ -342,20 +342,17 @@ return {
   },
 
   --  copilot [github code suggestions]
-  --  https://github.com/github/copilot.vim
-  --  As alternative to chatgpt, you can use copilot uncommenting this.
-  --  Then you must run :Copilot setup
-  -- {
-  --   "github/copilot.vim",
-  --   event = "User BaseFile"
-  -- },
-  -- copilot-cmp
-  -- https://github.com/zbirenbaum/copilot-cmp
-  -- {
-  --   "zbirenbaum/copilot-cmp",
-  --   opts = { suggesion = { enabled = false }, panel = { enabled = false } },
-  --   config = function (_, opts) require("copilot_cmp").setup(opts) end
-  -- },
+  --  https://github.com/zbirenbaum/copilot.lua
+  --  Write to get AI suggestion for your code on the fly.
+  --
+  --  NOTE: This plugin is disabled by default.
+  --        To enable it run :Copilot auth
+  --        and login using your GitHub account.
+  {
+    "zbirenbaum/copilot.lua",
+    event = "User BaseDefered", -- Ensure it loads before mason-lspconfig.
+    opts = {},
+  },
 
   -- [guess-indent]
   -- https://github.com/NMAC427/guess-indent.nvim
@@ -869,7 +866,7 @@ return {
   --  If you use other framework or language, refer to nvim-coverage docs:
   --  https://github.com/andythigpen/nvim-coverage/blob/main/doc/nvim-coverage.txt
   {
-    "zeioth/nvim-coverage", -- Our fork until all our PRs are merged.
+    "andythigpen/nvim-coverage",
     cmd = {
       "Coverage",
       "CoverageLoad",

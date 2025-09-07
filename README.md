@@ -5,8 +5,8 @@
   <h1><a href="https://github.com/NormalNvim/NormalNvim">NormalNvim</a></h1>
   <h3>*✨ ~ ⭐ - A normal Neovim distribution - ⭐ ~ ✨*</h3>
   <a href="https://discord.gg/ymcMaSnq7d" rel="nofollow">
-      <img src="https://img.shields.io/discord/1121138836525813760?color=azure&labelColor=6DC2A4&logo=discord&logoColor=black&label=Join the discord server&style=for-the-badge" data-canonical-src="https://img.shields.io/discord/1121138836525813760">
-    </a>
+    <img src="https://img.shields.io/discord/1121138836525813760?color=azure&labelColor=6DC2A4&logo=discord&logoColor=black&label=Join%20the%20discord%20server&style=for-the-badge" alt="Discord">
+  </a>
 </div>
 
 ---
@@ -125,6 +125,14 @@ Did you know NormalNvim was the first Neovim distro to ship a compiler that [sup
 
 ## Roadmap
 
+### High prio
+* Let's try to improve the user experience of the toggle keys under `<space>u` where possible.
+* Let's contribute to eldritch.nvim so markdown support is as good as the one we had on tokyonight.
+
+### Cool ideas 
+* Given all modern GPUs for consumers are now AI capable, let's re-study the possibility of making easier for users running local AI models. Considering Cloud services will still be necessary for android devices.
+* Let's start preparing NormalNvim v5.0
+
 ### Todos before v5.0 (2025)
 * It would be a neat UX improvement to integrate [snacks.nvim UI toggles](https://github.com/folke/snacks.nvim/blob/main/docs/toggle.md). But let's ensure code remain decoupled.
 * Compiler.nvim: test windows support.
@@ -134,10 +142,12 @@ Did you know NormalNvim was the first Neovim distro to ship a compiler that [sup
 * Makeit.nvim: Allow all possible conventions for `Makefile`, such as `makefile`, `Makefile.linux`, etc.
 * Compiler.nvim: Allow all possible conventions for `Makefile`, such as `makefile`, `Makefile.linux`, etc.
 * Compiler.nvim: test support for nim-lang.
-* Compiler.nvim: add support for new language `common LISP`.
-* Compiler.nvim: add support for new language `COBOL`.
 * Let's start doing some manual testing for the installer to ensure it install correctly on all OS.
 * Version v2 of the website should look considerably better.
+* ~~Let's ensure nvim 0.12 don't have any incompatibility, so it's easy to migrate when it's released next year.~~
+* ~~On Rust, out of the box, the items under `<lead> l` don't display unless rustfmt is installed.~~
+* ~~Compiler.nvim: add support for new language `common LISP`.~~ → Not planned.
+* ~~Compiler.nvim: add support for new language `COBOL`.~~  → Not planned.
 * ~~Let's consider [tiny-glimmer](https://github.com/rachartier/tiny-glimmer.nvim) over highlight-undo, so we don't have to maintain the plugin ourselves.~~ → Let's keep using highlighg-undo, as it's been fixed upstream.
 * ~~Let's keep an eye on the plugins that display deprecation warnings on nvim 0.11 [here](https://github.com/nvim-neo-tree/neo-tree.nvim/issues/1588) and [here](https://github.com/ray-x/lsp_signature.nvim/issues/346)~~. Full list of deprecations [here](https://neovim.io/doc/user/deprecated.html#deprecated).
 

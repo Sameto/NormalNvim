@@ -442,9 +442,9 @@ maps.n["<leader>ub"] = { ui.toggle_background, desc = "Background" }
 if is_available("nvim-cmp") then
   maps.n["<leader>uc"] = { ui.toggle_cmp, desc = "Autocompletion" }
 end
-if is_available("nvim-colorizer.lua") then
+if is_available("nvim-highlight-colors") then
   maps.n["<leader>uC"] =
-  { "<cmd>ColorizerToggle<cr>", desc = "color highlight" }
+  { "<cmd>HighlightColors toggle<cr>", desc = "Color highlight" }
 end
 maps.n["<leader>ud"] = { ui.toggle_diagnostics, desc = "Diagnostics" }
 maps.n["<leader>uD"] = { ui.set_indent, desc = "Change indent setting" }
@@ -561,7 +561,7 @@ if is_available("alpha-nvim") then
     function()
       local wins = vim.api.nvim_tabpage_list_wins(0)
       if #wins > 1
-          and vim.api.nvim_get_option_value("filetype", { win = wins[1] })
+          and vim.api.nvim_get_option_value("filetype", {})
           == "neo-tree"
       then
         vim.fn.win_gotoid(wins[2]) -- go to non-neo-tree window to toggle alpha
@@ -1331,14 +1331,18 @@ end
 --A function we call from the script to start lsp.
 --@return table lsp_mappings
 function M.lsp_mappings(client, bufnr)
-  -- Helper function to check if any active LSP clients
-  -- given a filter provide a specific capability.
+  -- Helper function to check if a lsp client implements a certain method.
+  --
+  -- Wrapper for `client:supports_method()` to avoid code repetition.
   -- @param capability string The server capability to check for (example: "documentFormattingProvider").
-  -- @param filter vim.lsp.get_clients.filter|nil A valid get_clients filter (see function docs).
+  -- @param filter? vim.lsp.get_clients.filter|nil A valid get_clients filter (see function docs).
   -- @return boolean # `true` if any of the clients provide the capability.
-  local function has_capability(capability, filter)
+  local function supports_method(method, filter)
+    -- default filter: current buffer.
+    if not filter then filter = { bufnr = bufnr } end
+
     for _, lsp_client in ipairs(vim.lsp.get_clients(filter)) do
-      if lsp_client.supports_method(capability) then return true end
+      if lsp_client:supports_method(method) then return true end
     end
     return false
   end
@@ -1370,7 +1374,7 @@ function M.lsp_mappings(client, bufnr)
   end
 
   if is_available("none-ls.nvim") then
-    lsp_mappings.n["<leader>lI"] = { "<cmd>NullLsInfo<cr>", desc = "Null-ls information" }
+    lsp_mappings.n["<leader>lI"] = { "<cmd>NullLsInfo<cr>", desc = "None-ls information" }
   end
 
   -- Code actions
@@ -1385,12 +1389,12 @@ function M.lsp_mappings(client, bufnr)
     events = { "InsertLeave" },
     desc = "Refresh codelens",
     callback = function(args)
-      if client.supports_method "textDocument/codeLens" then
+      if supports_method("textDocument/codeLens") then
         if vim.g.codelens_enabled then vim.lsp.codelens.refresh({ bufnr = args.buf }) end
       end
     end,
   })
-  if client.supports_method "textDocument/codeLens" then -- on LspAttach
+  if supports_method("textDocument/codeLens") then -- on LspAttach
     if vim.g.codelens_enabled then vim.lsp.codelens.refresh({ bufnr = 0 }) end
   end
 
@@ -1407,8 +1411,10 @@ function M.lsp_mappings(client, bufnr)
   }
 
   -- Formatting (keymapping)
-  local formatting = require("base.utils.lsp").formatting
-  local format_opts = require("base.utils.lsp").format_opts
+  local format_opts = {
+    format_on_save = { enabled = vim.g.autoformat_enabled or false },
+    disabled = {} -- You can disable formatting for desired lsp clients.
+  }
   lsp_mappings.n["<leader>lf"] = {
     function()
       vim.lsp.buf.format(format_opts)
@@ -1427,55 +1433,41 @@ function M.lsp_mappings(client, bufnr)
   )
 
   -- Autoformatting (autocmd)
-  local autoformat = formatting.format_on_save
-  local filetype = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
+  utils.add_autocmds_to_buffer("lsp_auto_format", bufnr, {
+    events = "BufWritePre", -- Trigger before save
+    desc = "Autoformat on save",
+    callback = function()
+      -- guard clause: supports_method
+      if
+          not supports_method("textDocument/formatting", { bufnr = bufnr })
+      then
+        utils.del_autocmds_from_buffer("lsp_auto_format", bufnr)
+        return
+      end
 
-  -- guard clauses
-  local is_autoformat_enabled = autoformat.enabled
-  local is_filetype_allowed = vim.tbl_isempty(autoformat.allow_filetypes or {})
-      or vim.tbl_contains(autoformat.allow_filetypes, filetype)
-  local is_filetype_ignored = vim.tbl_isempty(
-    autoformat.ignore_filetypes or {}
-  ) or not vim.tbl_contains(autoformat.ignore_filetypes, filetype)
+      -- Get autoformat setting (buffer or global)
+      local autoformat_enabled = vim.b.autoformat_enabled
+          or vim.g.autoformat_enabled
+      local has_no_filter = not format_opts.filter
+      local passes_filter = format_opts.filter and format_opts.filter(bufnr)
 
-if is_autoformat_enabled and is_filetype_allowed and is_filetype_ignored then
-    utils.add_autocmds_to_buffer("lsp_auto_format", bufnr, {
-      events = "BufWritePre", -- Trigger before save
-      desc = "Autoformat on save",
-      callback = function()
-        -- guard clause: has_capability
-        if
-            not has_capability("textDocument/formatting", { bufnr = bufnr })
-        then
-          utils.del_autocmds_from_buffer("lsp_auto_format", bufnr)
-          return
-        end
+      -- Use these variables in the if condition
+      if autoformat_enabled and (has_no_filter or passes_filter) then
+        local affected_bufnr = vim.tbl_deep_extend("force", format_opts, { bufnr = bufnr })
+        vim.lsp.buf.format(affected_bufnr)
+      end
+    end,
+  })
 
-        -- Get autoformat setting (buffer or global)
-        local autoformat_enabled = vim.b.autoformat_enabled
-            or vim.g.autoformat_enabled
-        local has_no_filter = not autoformat.filter
-        local passes_filter = autoformat.filter and autoformat.filter(bufnr)
-
-        -- Use these variables in the if condition
-        if autoformat_enabled and (has_no_filter or passes_filter) then
-          vim.lsp.buf.format(
-            vim.tbl_deep_extend("force", format_opts, { bufnr = bufnr })
-          )
-        end
-      end,
-    })
-
-    -- Key mappings for toggling autoformat (buffer/global)
-    lsp_mappings.n["<leader>uf"] = {
-      function() require("base.utils.ui").toggle_buffer_autoformat() end,
-      desc = "Toggle buffer autoformat",
-    }
-    lsp_mappings.n["<leader>uF"] = {
-      function() require("base.utils.ui").toggle_autoformat() end,
-      desc = "Toggle global autoformat",
-    }
-  end
+  -- Key mappings for toggling autoformat (buffer/global)
+  lsp_mappings.n["<leader>uf"] = {
+    function() require("base.utils.ui").toggle_buffer_autoformat() end,
+    desc = "Autoformat (buffer)",
+  }
+  lsp_mappings.n["<leader>uF"] = {
+    function() require("base.utils.ui").toggle_autoformat() end,
+    desc = "Autoformat",
+  }
 
   -- Highlight references when cursor holds
   utils.add_autocmds_to_buffer("lsp_document_highlight", bufnr, {
@@ -1483,7 +1475,7 @@ if is_autoformat_enabled and is_filetype_allowed and is_filetype_ignored then
       events = { "CursorHold", "CursorHoldI" },
       desc = "highlight references when cursor holds",
       callback = function()
-        if has_capability("textDocument/documentHighlight", { bufnr = bufnr }) then
+        if supports_method("textDocument/documentHighlight") then
           vim.lsp.buf.document_highlight()
         end
       end,
@@ -1534,24 +1526,24 @@ if is_autoformat_enabled and is_filetype_allowed and is_filetype_ignored then
   }
 
   -- Goto help
-  local lsp_hover_config = require("base.utils.lsp").lsp_hover_config
+  local hover_opts = vim.g.lsp_round_borders_enabled and { border = "rounded", silent = true } or {}
   lsp_mappings.n["gh"] = {
     function()
-      vim.lsp.buf.hover(lsp_hover_config)
+      vim.lsp.buf.hover(hover_opts)
     end,
     desc = "Hover help",
   }
   lsp_mappings.n["gH"] = {
-    function() vim.lsp.buf.signature_help(lsp_hover_config) end,
+    function() vim.lsp.buf.signature_help(hover_opts) end,
     desc = "Signature help",
   }
 
   lsp_mappings.n["<leader>lh"] = {
-    function() vim.lsp.buf.hover(lsp_hover_config) end,
+    function() vim.lsp.buf.hover(hover_opts) end,
     desc = "Hover help",
   }
   lsp_mappings.n["<leader>lH"] = {
-    function() vim.lsp.buf.signature_help(lsp_hover_config) end,
+    function() vim.lsp.buf.signature_help(hover_opts) end,
     desc = "Signature help",
   }
 
